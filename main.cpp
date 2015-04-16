@@ -293,45 +293,31 @@ public:
   void vykresli_desku_term(){
     int radek{1};
     cout<<"   ";
-    for(int i=0;i<N;i++)
-      cout<<"|"<<setfill('0')<<setw(3)<<i+1<<"|";
+    for(int i=1;i<N+1;i++)
+      cout<<"|"<<setfill('0')<<setw(3)<<i<<"|";
     cout<<endl<<"___";
+    //oddelovaci radek
     for(int i=0;i<N;i++)
       cout<<"=====";
     cout<<endl;
     for(int i=1;i<=N;i++){
-        //PRIDAT NEKAM SEM setfill('0')<<setw(3)<<radek++;
-      cout<<setfill('0')<<setw(3)<<radek++;
       //prvni radek
+      cout<<setfill('0')<<setw(3)<<radek++;
       for(int j=1;j<=N;j++){
-        cout<<"|";
-        cout<<"#";  //prvni hrac?
-        cout<<(pruchodny_smer('W',i,j)?' ':'#');
-        cout<<"#";  //druhy hrac?
-//        cout<<v[souradnice(i,j)]->tvar;
-        cout<<"|";
+        vykresli_kamen_1(i,j);
       }
-      cout<<endl<<"   ";
       //druhy radek
-      for(int j=1;j<=N;j++){
-        cout<<"|";
-        cout<<(pruchodny_smer('A',i,j)?' ':'#');
-        //cout<<' ';
-        cout<<v[souradnice(i,j)]->predmet;  //predmet
-        cout<<(pruchodny_smer('D',i,j)?' ':'#');
-        cout<<"|";
-      }
       cout<<endl<<"   ";
-      //treti radek
       for(int j=1;j<=N;j++){
-        cout<<"|";
-        cout<<"#";  //treti hrac?
-        cout<<(pruchodny_smer('S',i,j)?' ':'#');
-        cout<<"#";  //ctvrty hrac?
-        cout<<"|";
+        vykresli_kamen_2(i,j);
+      }
+      //treti radek
+      cout<<endl<<"   ";
+      for(int j=1;j<=N;j++){
+        vykresli_kamen_3(i,j);
       }
       cout<<endl<<"___";
-
+      //oddelovaci radek
       for(int i=0;i<N;i++)
         cout<<"=====";
       cout<<endl;
