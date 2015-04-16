@@ -28,10 +28,12 @@
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
+//#include "main.h"
 
 #define SOURADNICE_VOLNY_KAMEN 1,0
 
 using namespace std;
+
 
 /**
 * @class Kamen
@@ -270,6 +272,14 @@ public:
 
 
   /**
+   * @brief Vrati rozmer hraci desky
+   * @return vraci rozmer hraci desky
+   */
+  int rozmer(){
+    return N;
+  }
+
+  /**
    * @brief Posune radek doprava nebo doleva
    * @param c_radku je cislo radku
    * @param smer true - doprava, false - doleva
@@ -391,55 +401,123 @@ public:
 };
 
 
+
+/**
+* @class Hrac
+* @brief Jeden hrac
+*
+* @todo Pridat popis ze zadani!!! //POZOR
+* @author Martin Knotek
+*/
+class Hrac{
+  int x,y;  //pozice na hraci desce
+  Deska *deska;
+
+public:
+  Hrac(Deska *deska,int x, int y){
+    Hrac::x=x;
+    Hrac::y=y;
+    Hrac::deska=deska;
+  }
+
+  void posun(char smer);
+};
+
+
+
+class Hra{
+  Deska *hraci_plocha;
+  vector<Hrac*> hrac;
+  int poc_karet,poc_hracu;
+
+  bool nastaveni_rozmeru(){
+    int rozmer;
+    cout<<"Zadejte rozmer hraci desky (licha cisla od 5 do 11):";
+    cin>>rozmer;
+
+    if (!((rozmer>=5)&&(rozmer<=11)&&(rozmer%2))){
+      cerr<<"Spatny rozmer pole - pouze licha cisla 5-11"<<endl;
+
+      if (cin.fail()){  //nebylo zadano cislo
+        cin.clear();
+        cin.ignore(256,'\n');
+      }
+      return false;
+    }
+    hraci_plocha=new Deska(rozmer);
+    return true;
+  }
+
+  bool nastaveni_poctu_hracu(){
+    int rozmer=hraci_plocha->rozmer();
+    cout<<"Zadejte pocet hracu (2-4):";
+    cin>>poc_hracu;
+    hrac.resize(poc_hracu);
+    switch (poc_hracu) {
+      case 4:
+        hrac[3]=new Hrac(hraci_plocha,rozmer,rozmer);
+      case 3:
+        hrac[2]=new Hrac(hraci_plocha,rozmer,1);
+      case 2:
+        hrac[1]=new Hrac(hraci_plocha,1,rozmer);
+        hrac[0]=new Hrac(hraci_plocha,1,1);
+        return true;
+        break;
+      default:
+        cerr<<"Mohou hrat pouze  dva, tri nebo ctyri hraci"<<endl;
+        if (cin.fail()){  //nebylo zadano cislo
+          cin.clear();
+          cin.ignore(256,'\n');
+        }
+        return false;
+        break;
+    }
+  }
+
+  bool nastaveni_poctu_karet(){
+    cout<<"Zadejte pocet ukolovych karet (12 nebo 24):";
+    cin>>poc_karet;
+    if (!((poc_karet==12)||(poc_karet==24))){
+      cerr<<"Nepovoleny pocet ukolovych karet"<<endl;
+
+      if (cin.fail()){  //nebylo zadano cislo
+        cin.clear();
+        cin.ignore(256,'\n');
+      }
+      return false;
+    }
+    return true;
+  }
+
+public:
+
+  Hra(){
+    while(!nastaveni_rozmeru()){}
+    while(!nastaveni_poctu_hracu()){}
+    while(!nastaveni_poctu_karet()){}
+  }
+
+  void vykresli_hru_term(){
+    hraci_plocha->vykresli_desku_term();
+  }
+};
+
+
 /**
  * @brief Rozbehne program
  *
  * @return vraci nulu pokud vse probehlo v poradku
  */
 int main() {
-  char predmet='A';
-//  using namespace std;
 
+  Hra *hra=new Hra;
 
-//  cout<<endl;
-//  for(int i=0;i<11;i++)
-//    cout<< "=====";
-//  cout<<endl;
-//  for(int i=0;i<11;i++){
-//    //cout<< "|1 #|"<<endl<< "|  #|"<<endl<< "|# 4|"<<endl<< "_____"<<endl;
-//    for(int i=0;i<11;i++)
-//      cout<< "|1 #|";
-//    cout<<endl;
-//    for(int i=0;i<11;i++)
-//      cout<< "|  #|";
-//    cout<<endl;
-//    for(int i=0;i<11;i++)
-//      cout<< "|# 4|";
-//    cout<<endl;
-//    for(int i=0;i<11;i++)
-//      cout<< "=====";
-//    cout<<endl;
-//  }
-
-  cout<<"Zadejte rozmer hraci desky:";
-  int rozmer;
-
-  cin>>rozmer;
-  if (!((rozmer>=5)&&(rozmer<=11)&&(rozmer%2))){
-    cerr<<"Spatny rozmer pole - pouze licha cisla 5-11"<<endl<<
-          "Nastaven rozmer 7"<<endl;
-    rozmer=7;
-  }
-  Deska *hraci_plocha=new Deska(rozmer);
-
-
-  cout<<"Hledany predmet: "<<predmet<<endl;
 //  cout<<"Pocet tvaru: "<<endl<<"I: "<<Kamen::count_I<<endl<<
 //      "L: "<<Kamen::count_L<<endl<<"T: "<<Kamen::count_T<<endl<<endl; //SMAZ
 
-  hraci_plocha->vykresli_desku_term();
-
+  hra->vykresli_hru_term();
   return 0;
 }
+
 
 /*** konec souboru projekt.cpp ***/
