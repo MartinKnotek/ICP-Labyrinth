@@ -43,7 +43,8 @@ using namespace std;
 * @author Martin Knotek
 */
 class Kamen{
-  friend class Deska; //Deska muze pristupovat k private tridy Kamen
+  friend class Deska; //trida Deska muze pristupovat k private tridy Kamen
+  friend class Hra; //trida Hra muze pristupovat k private tridy Kamen
   char tvar=0, predmet=' ';
   int natoceni=0;
 public:
@@ -102,6 +103,7 @@ int Kamen::count_T=0;
 * @author Martin Knotek
 */
 class Deska{
+  friend class Hra; //trida Hra muze pristupovat k private tridy Deska
   int N;  //delka strany hraci desky
   vector<Kamen*> v;
   int nahodne;  //pro ulozeni hodnoty z random funkce
@@ -295,12 +297,177 @@ public:
   void posun_sloupec(int c_sloupce, bool smer);
 
 
+//  void vykresli_bod(Kamen *k){
+//    for
+//    if (k!=nullptr)
+//      cout<<
+//  }
+};
+
+
+
+/**
+* @class Hrac
+* @brief Jeden hrac
+*
+* @todo Pridat popis ze zadani!!! //POZOR
+* @author Martin Knotek
+*/
+class Hrac{
+  int x,y;  //pozice na hraci desce
+  Deska *deska;
+
+public:
+  /**
+   * @brief Konstruktor
+   *
+   * Nastavi pocatecni pozici hrace
+   * @param deska je ukazatel na hraci desku, na ktere bude hrac hrat
+   * @param x je cislo radku, na kterem bude hrac zacinat
+   * @param y je cislo sloupce, na kterem bude hrac zacinat
+   */
+  Hrac(Deska *deska,int x, int y){
+    Hrac::x=x;
+    Hrac::y=y;
+    Hrac::deska=deska;
+  }
+
+  /**
+   * @brief Cislo radku, na kterem se hrac nachazi
+   * @return vrati cislo radku, na kterem se dany hrac nachazi
+   */
+  int radek(){
+    return x;
+  }
+
+  /**
+   * @brief Cislo sloupce, na kterem se hrac nachazi
+   * @return vrati cislo sloupce, na kterem se dany hrac nachazi
+   */
+  int sloupec(){
+    return y;
+  }
+
+  void posun(char smer);
+};
+
+
+
+/**
+ * @class Hra
+ * @brief Trida Hra reprezentuje jednu hru
+ *
+ * @todo Pridat popis ze zadani!!! //POZOR
+ * @author Martin Knotek
+ */
+class Hra{
+  Deska *hraci_plocha;
+  vector<Hrac*> hrac{NULL,NULL,NULL,NULL};
+  int poc_karet,poc_hracu;
+
+  /**
+   * @brief Ziska od lidra rozmer hraci desky
+   *
+   * Zkontroluje zda je ziskany rozmer v mezich a pote pomoci tohoto
+   * rozmeru vytvori hraci desku.
+   * @return vraci true, pokud byl ziskany rozmer v mezich, jinak
+   * vraci false
+   */
+  bool nastaveni_rozmeru(){
+    int rozmer;
+    cout<<"Zadejte rozmer hraci desky (licha cisla od 5 do 11):";
+    cin>>rozmer;
+
+    if (!((rozmer>=5)&&(rozmer<=11)&&(rozmer%2))){
+      cerr<<"Spatny rozmer pole - pouze licha cisla 5-11"<<endl;
+
+      if (cin.fail()){  //nebylo zadano cislo
+        cin.clear();
+        cin.ignore(256,'\n');
+      }
+      return false;
+    }
+    hraci_plocha=new Deska(rozmer);
+    return true;
+  }
+
+  /**
+   * @brief Ziska od lidra pocet hracu
+   *
+   * Zkontroluje zda je ziskany pocet hracu v mezich a pote pomoci tohoto
+   * poctu vytvori dany pocet hracu
+   * @return vraci true, pokud byl ziskany pocet hracu v mezich, jinak false
+   */
+  bool nastaveni_poctu_hracu(){
+    int rozmer=hraci_plocha->rozmer();
+    cout<<"Zadejte pocet hracu (2-4):";
+    cin>>poc_hracu;
+//    hrac.resize(poc_hracu);
+    switch (poc_hracu) {
+      case 4:
+        hrac[3]=new Hrac(hraci_plocha,rozmer,rozmer);
+      case 3:
+        hrac[2]=new Hrac(hraci_plocha,rozmer,1);
+      case 2:
+        hrac[1]=new Hrac(hraci_plocha,1,rozmer);
+        hrac[0]=new Hrac(hraci_plocha,1,1);
+        return true;
+        break;
+      default:
+        cerr<<"Mohou hrat pouze  dva, tri nebo ctyri hraci"<<endl;
+        if (cin.fail()){  //nebylo zadano cislo
+          cin.clear();
+          cin.ignore(256,'\n');
+        }
+        return false;
+        break;
+    }
+  }
+
+  /**
+   * @brief Ziska od lidra pocet ukolovych karet
+   *
+   * Zkontroluje zda je ziskany pocet karet v mezich a pote pomoci tohoto
+   * poctu vytvori dany pocet karet
+   * @todo vytvorit ukolove karty
+   * @return vraci true, pokud byl ziskany pocet karet v mezich, jinak false
+   */
+  bool nastaveni_poctu_karet(){
+    cout<<"Zadejte pocet ukolovych karet (12 nebo 24):";
+    cin>>poc_karet;
+    if (!((poc_karet==12)||(poc_karet==24))){
+      cerr<<"Nepovoleny pocet ukolovych karet"<<endl;
+
+      if (cin.fail()){  //nebylo zadano cislo
+        cin.clear();
+        cin.ignore(256,'\n');
+      }
+      return false;
+    }
+    return true;
+  }
+
+public:
+
+  /**
+   * @brief Konstruktor
+   *
+   * Zjisti a nastavi rozmer hraci plochy, pocet hracu a pocet ukolovych karet
+   */
+  Hra(){
+    while(!nastaveni_rozmeru()){}
+    while(!nastaveni_poctu_hracu()){}
+    while(!nastaveni_poctu_karet()){}
+  }
+
+
   /**
    * @brief Vykresli hraci desku pomoci textove grafiky
    *
    * Vykresluje do terminalu - pouziva se pouze textova grafika
    */
-  void vykresli_desku_term(){
+  void vykreslit_terminal(){
+    int N=hraci_plocha->rozmer();
     int radek{1};
     cout<<"   ";
     for(int i=1;i<N+1;i++)
@@ -340,7 +507,7 @@ public:
 //
 //      cout<<endl;
 //    }
-    cout<<"volny kamen: "<<v[0]->tvar<<endl;
+    cout<<"volny kamen: "<<hraci_plocha->v[0]->tvar<<endl;
     vykresli_kamen_1(SOURADNICE_VOLNY_KAMEN);
     cout<<endl;
     vykresli_kamen_2(SOURADNICE_VOLNY_KAMEN);
@@ -359,9 +526,21 @@ public:
    */
   void vykresli_kamen_1(int i, int j){
     cout<<"|";
-    cout<<"#";  //prvni hrac?
-    cout<<(pruchodny_smer('W',i,j)?' ':'#');
-    cout<<"#";  //druhy hrac?
+
+//    if(hrac[2]){//treti hrac
+//      if((hrac[2]->radek()==i)&&(hrac[2]->sloupec()==j)){
+//        cout<<"3";
+//      }
+//      else {
+//        cout<<"#";
+//      }
+//    }
+    //prvni hrac?
+    cout<<((hrac[0]&&(hrac[0]->radek()==i)&&(hrac[0]->sloupec()==j))?"1":"#");
+    //cesta na sever
+    cout<<(hraci_plocha->pruchodny_smer('W',i,j)?' ':'#');
+    //druhy hrac?
+    cout<<((hrac[1]&&(hrac[1]->radek()==i)&&(hrac[1]->sloupec()==j))?"2":"#");
     cout<<"|";
   }
   /**
@@ -373,9 +552,12 @@ public:
    */
   void vykresli_kamen_2(int i, int j){
     cout<<"|";
-    cout<<(pruchodny_smer('A',i,j)?' ':'#');
-    cout<<v[souradnice(i,j)]->predmet;  //predmet
-    cout<<(pruchodny_smer('D',i,j)?' ':'#');
+    //cesta na zapad
+    cout<<(hraci_plocha->pruchodny_smer('A',i,j)?' ':'#');
+    //predmet
+    cout<<hraci_plocha->v[hraci_plocha->souradnice(i,j)]->predmet;
+    //cesta na vychod
+    cout<<(hraci_plocha->pruchodny_smer('D',i,j)?' ':'#');
     cout<<"|";
   }
   /**
@@ -387,119 +569,15 @@ public:
    */
   void vykresli_kamen_3(int i, int j){
     cout<<"|";
-    cout<<"#";  //prvni hrac?
-    cout<<(pruchodny_smer('S',i,j)?' ':'#');
-    cout<<"#";  //druhy hrac?
+    //treti hrac
+    cout<<((hrac[2]&&(hrac[2]->radek()==i)&&(hrac[2]->sloupec()==j))?"3":"#");
+    //cesta na jih
+    cout<<(hraci_plocha->pruchodny_smer('S',i,j)?' ':'#');
+    //ctvrty hrac
+    cout<<((hrac[3]&&(hrac[3]->radek()==i)&&(hrac[3]->sloupec()==j))?"4":"#");
     cout<<"|";
   }
 
-//  void vykresli_bod(Kamen *k){
-//    for
-//    if (k!=nullptr)
-//      cout<<
-//  }
-};
-
-
-
-/**
-* @class Hrac
-* @brief Jeden hrac
-*
-* @todo Pridat popis ze zadani!!! //POZOR
-* @author Martin Knotek
-*/
-class Hrac{
-  int x,y;  //pozice na hraci desce
-  Deska *deska;
-
-public:
-  Hrac(Deska *deska,int x, int y){
-    Hrac::x=x;
-    Hrac::y=y;
-    Hrac::deska=deska;
-  }
-
-  void posun(char smer);
-};
-
-
-
-class Hra{
-  Deska *hraci_plocha;
-  vector<Hrac*> hrac;
-  int poc_karet,poc_hracu;
-
-  bool nastaveni_rozmeru(){
-    int rozmer;
-    cout<<"Zadejte rozmer hraci desky (licha cisla od 5 do 11):";
-    cin>>rozmer;
-
-    if (!((rozmer>=5)&&(rozmer<=11)&&(rozmer%2))){
-      cerr<<"Spatny rozmer pole - pouze licha cisla 5-11"<<endl;
-
-      if (cin.fail()){  //nebylo zadano cislo
-        cin.clear();
-        cin.ignore(256,'\n');
-      }
-      return false;
-    }
-    hraci_plocha=new Deska(rozmer);
-    return true;
-  }
-
-  bool nastaveni_poctu_hracu(){
-    int rozmer=hraci_plocha->rozmer();
-    cout<<"Zadejte pocet hracu (2-4):";
-    cin>>poc_hracu;
-    hrac.resize(poc_hracu);
-    switch (poc_hracu) {
-      case 4:
-        hrac[3]=new Hrac(hraci_plocha,rozmer,rozmer);
-      case 3:
-        hrac[2]=new Hrac(hraci_plocha,rozmer,1);
-      case 2:
-        hrac[1]=new Hrac(hraci_plocha,1,rozmer);
-        hrac[0]=new Hrac(hraci_plocha,1,1);
-        return true;
-        break;
-      default:
-        cerr<<"Mohou hrat pouze  dva, tri nebo ctyri hraci"<<endl;
-        if (cin.fail()){  //nebylo zadano cislo
-          cin.clear();
-          cin.ignore(256,'\n');
-        }
-        return false;
-        break;
-    }
-  }
-
-  bool nastaveni_poctu_karet(){
-    cout<<"Zadejte pocet ukolovych karet (12 nebo 24):";
-    cin>>poc_karet;
-    if (!((poc_karet==12)||(poc_karet==24))){
-      cerr<<"Nepovoleny pocet ukolovych karet"<<endl;
-
-      if (cin.fail()){  //nebylo zadano cislo
-        cin.clear();
-        cin.ignore(256,'\n');
-      }
-      return false;
-    }
-    return true;
-  }
-
-public:
-
-  Hra(){
-    while(!nastaveni_rozmeru()){}
-    while(!nastaveni_poctu_hracu()){}
-    while(!nastaveni_poctu_karet()){}
-  }
-
-  void vykresli_hru_term(){
-    hraci_plocha->vykresli_desku_term();
-  }
 };
 
 
@@ -515,7 +593,7 @@ int main() {
 //  cout<<"Pocet tvaru: "<<endl<<"I: "<<Kamen::count_I<<endl<<
 //      "L: "<<Kamen::count_L<<endl<<"T: "<<Kamen::count_T<<endl<<endl; //SMAZ
 
-  hra->vykresli_hru_term();
+  hra->vykreslit_terminal();
   return 0;
 }
 
