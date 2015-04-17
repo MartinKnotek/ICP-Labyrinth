@@ -269,7 +269,7 @@ public:
   Deska(int rozmer){
     N=rozmer;
     v.resize(N*N+1);
-    this->rozmisti_kameny();
+    rozmisti_kameny();
   }
 
 
@@ -316,7 +316,7 @@ public:
 class Hrac{
   int x,y;  //pozice na hraci desce
   Deska *deska;
-
+  char hledany_predmet{'_'};
 public:
   /**
    * @brief Konstruktor
@@ -363,6 +363,7 @@ public:
 class Hra{
   Deska *hraci_plocha;
   vector<Hrac*> hrac{NULL,NULL,NULL,NULL};
+  vector<char> balicek_karet;
   int poc_karet,poc_hracu;
 
   /**
@@ -444,6 +445,36 @@ class Hra{
       }
       return false;
     }
+
+
+    //vygeneruje balicek karet
+    int poradi;
+    balicek_karet.assign(poc_karet,' ');
+
+
+    for(int i=0;i<poc_karet;i++){
+      poradi=rand()%(poc_karet-i);
+      for(int j=0;j<poc_karet;j++){
+        if(balicek_karet[j]==' '){
+          if(!poradi){
+            balicek_karet[j]='A'+i;
+            break;
+          }
+          poradi--;
+        }
+      }
+    }
+
+    //SMAZ
+//    char c;
+    cout<<"Balicek karet:";
+    for(int i=poc_karet;i>=0;--i){
+//      c=balicek_karet.top();
+//      cout<<balicek_karet.top();
+      cout<<balicek_karet[i];
+    }
+    cout<<endl;
+
     return true;
   }
 
