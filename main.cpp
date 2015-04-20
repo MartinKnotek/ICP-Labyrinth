@@ -28,10 +28,14 @@
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
+#include <string>
 //#include "main.h"
 
 #define SOURADNICE_VOLNY_KAMEN 1,0
-
+#define NATOCENI 1
+#define POSUNUTI 2
+#define POHYB 3
+#define ULOZ 4
 using namespace std;
 
 
@@ -45,8 +49,8 @@ using namespace std;
 class Kamen{
   friend class Deska; //trida Deska muze pristupovat k private tridy Kamen
   friend class Hra; //trida Hra muze pristupovat k private tridy Kamen
-  char tvar=0, predmet=' ';
-  int natoceni=0;
+  char tvar{0}, predmet{' '};
+  int natoceni{0};
 public:
   static int count_I, count_L, count_T;
 
@@ -83,6 +87,14 @@ public:
    */
   void zmen_tvar(char t){ //t musi byt v I,L nebo T
     tvar=t;
+  }
+
+  /**
+   * @brief Zmeni/prida predmet na kameni
+   * @param p je predmet kamene
+   */
+  void zmen_predmet(char p){
+    predmet=p;
   }
 
 
@@ -138,10 +150,9 @@ class Deska{
       vytvor_nahodny_kamen(SOURADNICE_VOLNY_KAMEN);
   }
 
+
   /**
-  *@brief Rozmisti kameny na hraci desku
-  *
-  *@param rozmer je rozmer strany desky - liche cislo (5-11)
+  * @brief Rozmisti kameny na hraci desku
   */
   void rozmisti_kameny(){
     srand(time(0)); // pouziti aktualniho casu jako 'seed' pro random generator
@@ -210,9 +221,12 @@ class Deska{
 
     nahodne=rand()%(neg_I+neg_L+neg_T);  //0-100 procent
 
-    if (nahodne<neg_I) v[souradnice(i,j)]=new Kamen('I',rand()%4,' ');
-    else if (nahodne<neg_L+neg_I) v[souradnice(i,j)]=new Kamen('L',rand()%4,' ');
-    else v[souradnice(i,j)]=new Kamen('T',rand()%4,' ');
+    if (nahodne<neg_I)
+      v[souradnice(i,j)]=new Kamen('I',rand()%4,' ');
+    else if (nahodne<neg_L+neg_I)
+      v[souradnice(i,j)]=new Kamen('L',rand()%4,' ');
+    else
+      v[souradnice(i,j)]=new Kamen('T',rand()%4,' ');
   }
 
 
@@ -364,7 +378,7 @@ class Hra{
   Deska *hraci_plocha;
   vector<Hrac*> hrac{NULL,NULL,NULL,NULL};
   vector<char> balicek_karet;
-  int poc_karet,poc_hracu;
+  int poc_karet{0},poc_hracu;
 
   /**
    * @brief Ziska od lidra rozmer hraci desky
@@ -446,36 +460,86 @@ class Hra{
       return false;
     }
 
+    vytvor_balicek(balicek_karet,poc_karet);
+    rozmisti_predmety();
+//    //vygeneruje balicek karet
+//    int poradi;
+//    balicek_karet.assign(poc_karet,' ');
 
+//    for(int i=0;i<poc_karet;i++){
+//      poradi=rand()%(poc_karet-i);
+//      for(int j=0;j<poc_karet;j++){
+//        if(balicek_karet[j]==' '){
+//          if(!poradi){
+//            balicek_karet[j]='A'+i;
+//            break;
+//          }
+//          poradi--;
+//        }
+//      }
+//    }
+    return true;
+  }
+
+
+  /**
+   * @brief Vytvori balicek karet
+   * @param balicek_karet je reference na balicek, ktery se ma vygenerovat
+   * @param poc_karet je pocet generovanych karet
+   */
+  void vytvor_balicek(vector<char> &balicek_karet,int poc_karet){
     //vygeneruje balicek karet
     int poradi;
     balicek_karet.assign(poc_karet,' ');
-
 
     for(int i=0;i<poc_karet;i++){
       poradi=rand()%(poc_karet-i);
       for(int j=0;j<poc_karet;j++){
         if(balicek_karet[j]==' '){
           if(!poradi){
-            balicek_karet[j]='A'+i;
+            balicek_karet[j]='a'+i;   //od ktereho znaku se bude generovat
             break;
           }
           poradi--;
         }
       }
     }
+  }
 
-    //SMAZ
-//    char c;
-    cout<<"Balicek karet:";
-    for(int i=poc_karet;i>=0;--i){
-//      c=balicek_karet.top();
-//      cout<<balicek_karet.top();
-      cout<<balicek_karet[i];
+
+  void rozmisti_predmety(){
+    vector<char> karty;
+    vytvor_balicek(karty,poc_karet);
+    unsigned int p_st; //pravdepodobnost
+    int poc_kamenu=hraci_plocha->rozmer()*hraci_plocha->rozmer();
+    for(int i=1;i<=poc_kamenu;i++){
+      p_st=rand()%(poc_kamenu-i+1);
+      if(p_st<karty.size()){
+        hraci_plocha->v[i]->zmen_predmet(karty.back());
+        karty.pop_back();
+//        if(!karty.size())
+//          break;
+      }
     }
-    cout<<endl;
 
-    return true;
+//    for(int i=1;i<=hraci_plocha->rozmer();i++){
+//      for(int j=1;j<=hraci_plocha->rozmer();j++){
+//        p_st=rand()%(hraci_plocha->rozmer()*hraci_plocha->rozmer()-
+//                     hraci_plocha->souradnice(i,j)-1);
+
+//        p_st=karty.size()/(hraci_plocha->rozmer()*hraci_plocha->rozmer()-
+//                        hraci_plocha->souradnice(i,j)-1);
+//>=
+//      }
+//    }
+
+//    while(karty.size()){
+
+//      cout<<karty.back()<<" /// ";
+
+
+//      karty.pop_back();
+//    }
   }
 
 public:
@@ -493,6 +557,56 @@ public:
 
 
   /**
+   * @brief Posune radek/sloupce
+   *
+   * vlozi volny kamen a tim vytlaci jiny, ktery se stane volnym kamenem
+   * @param r_s_smer je retezec, ktery udava ktery radek/sloupec se ma
+   * posunout kterym smerem (cislo nasledovane smerem).
+   *
+   * format retezce: cs (c je sude cislo, s je smer pohybu [W,A,S,D])
+   * @return vraci true, pokud retezec vyhovuje formatu, jinak false
+   */
+  bool posun_rad_sl(string r_s_smer){
+    cout<<r_s_smer.length()<<endl;
+
+
+//    if((rad_sl%2)&&(rad_sl>0)&&(rad_sl<hra->))
+//      if (cin.fail()){  //nebylo zadano cislo
+//        cin.clear();
+//        cin.ignore(256,'\n');
+    return true;
+  }
+
+  void natoceni_volneho_kamene(int n){
+    hraci_plocha->v[0]->zmen_natoceni(n);
+  }
+
+
+  /**
+   * @brief Ulozi hru do souboru
+   *
+   * @todo dodelat ukladani hry - zatim jen vypisuje hlasku
+   */
+  void uloz_hru(){
+    cout<<"Ukladam hru"<<endl;
+  }
+
+
+
+  /**
+   * @brief Vypise obsah balicku ukolovych karet
+   */
+  void vypis_balicek(){
+//    for(int i=poc_karet-1;i>=0;i--){  //vypisuje vektor (balicek) odzadu
+//      cout<<balicek_karet[i];
+//    }
+    for(int i=balicek_karet.size()-1;i>=0;i--){  //vypisuje (balicek) odzadu
+      cout<<balicek_karet[i];
+    }
+    cout<<endl;
+  }
+
+  /**
    * @brief Vykresli hraci desku pomoci textove grafiky
    *
    * Vykresluje do terminalu - pouziva se pouze textova grafika
@@ -506,7 +620,7 @@ public:
     cout<<endl<<"___";
     //oddelovaci radek
     for(int i=0;i<N;i++)
-      cout<<"=====";
+      cout<<":===:";
     cout<<endl;
     for(int i=1;i<=N;i++){
       //prvni radek
@@ -527,7 +641,7 @@ public:
       cout<<endl<<"___";
       //oddelovaci radek
       for(int i=0;i<N;i++)
-        cout<<"=====";
+        cout<<":===:";
       cout<<endl;
     }
 
@@ -538,13 +652,16 @@ public:
 //
 //      cout<<endl;
 //    }
-    cout<<"volny kamen: "<<hraci_plocha->v[0]->tvar<<endl;
+    cout<<"volny kamen: "<<endl;
     vykresli_kamen_1(SOURADNICE_VOLNY_KAMEN);
     cout<<endl;
     vykresli_kamen_2(SOURADNICE_VOLNY_KAMEN);
     cout<<endl;
     vykresli_kamen_3(SOURADNICE_VOLNY_KAMEN);
     cout<<endl;
+
+    cout<<"Balicek karet:";
+    vypis_balicek();
   }
 
 
@@ -620,11 +737,84 @@ public:
 int main() {
 
   Hra *hra=new Hra;
+  //int rad_sl; //cislo radku/sloupce
 
 //  cout<<"Pocet tvaru: "<<endl<<"I: "<<Kamen::count_I<<endl<<
 //      "L: "<<Kamen::count_L<<endl<<"T: "<<Kamen::count_T<<endl<<endl; //SMAZ
 
-  hra->vykreslit_terminal();
+  string vstup="";
+  int stav=NATOCENI;
+//  cout<<"Natoc volny kamen (W,A,S,D-natoceni, N-preskocit):";
+//  cin.clear();
+//  cin>>vstup;
+  while(true) {
+    hra->vykreslit_terminal();
+    cin.clear();
+
+    if(vstup=="N"){
+      if(stav==NATOCENI)
+        stav=POSUNUTI;
+      else if (stav==POHYB) {
+        stav=NATOCENI;
+      }
+    }
+    if(vstup=="Q"){
+      stav=ULOZ;
+    }
+
+    switch (stav) {
+      case NATOCENI:
+        cout<<"Natoc volny kamen (W,A,S,D-natoceni, N-preskocit):";
+        cin>>vstup;
+        if(vstup=="W")
+          hra->natoceni_volneho_kamene(0);
+        else if(vstup=="A")
+          hra->natoceni_volneho_kamene(3);
+        else if(vstup=="S")
+          hra->natoceni_volneho_kamene(2);
+        else if(vstup=="D")
+          hra->natoceni_volneho_kamene(1);
+//        if(vstup=="Q")
+//          hra->uloz_hru();
+
+        break;
+
+      case POSUNUTI:
+        cout<<"Posun radek/sloupec vlozenim volneho kamene:";
+//        cout<<"Cislo radku/sloupce k posunuti (pouze suda cisla):";
+//        cin>>rad_sl;
+//        cout<<"Smer posunuti (W-nahoru, A-vlevo, S-dolu, D-vpravo):";
+//        cin>>rad_sl;
+
+        do {
+          cin.clear();
+          cin>>vstup;
+          if(vstup=="Q"){
+            stav=ULOZ;
+            break;
+          }
+        }while(!hra->posun_rad_sl(vstup));
+        break;
+
+      case POHYB:
+        break;
+
+      case ULOZ:
+        hra->uloz_hru();
+        exit(0);
+        break;
+
+      default:
+        break;
+    }
+//    cin.clear();
+//    cin>>vstup;
+  }
+
+  //ulozeni hry
+//  hra->uloz_hru();
+
+
   return 0;
 }
 
