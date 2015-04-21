@@ -29,6 +29,7 @@
 #include <ctime>
 #include <iomanip>
 #include <string>
+#include <regex>
 //#include "main.h"
 
 #define SOURADNICE_VOLNY_KAMEN 1,0
@@ -36,6 +37,7 @@
 #define POSUNUTI 2
 #define POHYB 3
 #define ULOZ 4
+#define DALSI_HRAC 5
 using namespace std;
 
 
@@ -298,17 +300,49 @@ public:
   /**
    * @brief Posune radek doprava nebo doleva
    * @param c_radku je cislo radku
-   * @param smer true - doprava, false - doleva
+   * @param doprava true - doprava, false - doleva
    */
-  void posun_radek(int c_radku, bool smer);
+  void posun_radek(int c_radku, bool doprava){
+    Kamen *vymen=v[0];
+    if(doprava){
+      v[0]=v[souradnice(c_radku,N)];
+      for (int i=N;i>1;i--){
+        v[souradnice(c_radku,i)]=v[souradnice(c_radku,i-1)];
+      }
+      v[souradnice(c_radku,1)]=vymen;
+    }
+    else{
+      v[0]=v[souradnice(c_radku,1)];
+      for (int i=1;i<N;i++){
+        v[souradnice(c_radku,i)]=v[souradnice(c_radku,i+1)];
+      }
+      v[souradnice(c_radku,N)]=vymen;
+    }
+  }
 
 
   /**
    * @brief Posune sloupec dolu nebo nahoru
    * @param c_sloupce je cislo sloupce
-   * @param smer true - dolu, false - nahoru
+   * @param dolu true - dolu, false - nahoru
    */
-  void posun_sloupec(int c_sloupce, bool smer);
+  void posun_sloupec(int c_sloupce, bool dolu){
+    Kamen *vymen=v[0];
+    if(dolu){
+      v[0]=v[souradnice(N,c_sloupce)];
+      for (int i=N;i>1;i--){
+        v[souradnice(i,c_sloupce)]=v[souradnice(i-1,c_sloupce)];
+      }
+      v[souradnice(1,c_sloupce)]=vymen;
+    }
+    else{
+      v[0]=v[souradnice(1,c_sloupce)];
+      for (int i=1;i<N;i++){
+        v[souradnice(i,c_sloupce)]=v[souradnice(i+1,c_sloupce)];
+      }
+      v[souradnice(N,c_sloupce)]=vymen;
+    }
+  }
 
 
 //  void vykresli_bod(Kamen *k){
@@ -362,7 +396,10 @@ public:
     return y;
   }
 
-  void posun(char smer);
+  void posun(char smer){
+    cout<<"posun hrace"<<endl;
+    x++;y++;
+  }
 };
 
 
@@ -557,6 +594,15 @@ public:
 
 
   /**
+   * @brief Posune hrace po hraci plose
+   * @param c_hrace je oznaceni hrace <1;4>
+   * @param smer udava smer pohybu (W,A,S,D)
+   */
+  void posun_hrace(int c_hrace,char smer){
+    hrac[c_hrace-1]->posun(smer); //hraci jsou cislovany od nuly
+  }
+
+  /**
    * @brief Posune radek/sloupce
    *
    * vlozi volny kamen a tim vytlaci jiny, ktery se stane volnym kamenem
@@ -567,18 +613,85 @@ public:
    * @return vraci true, pokud retezec vyhovuje formatu, jinak false
    */
   bool posun_rad_sl(string r_s_smer){
-    cout<<r_s_smer.length()<<endl;
+    int rad_sl;
+    char predmet;
+    if(r_s_smer.length()==2){
+      rad_sl=r_s_smer[0]-'0';
+      predmet=r_s_smer[1];
+    }
+    else if(r_s_smer.length()==3){
+      rad_sl=10*(r_s_smer[0]-'0')+r_s_smer[1]-'0';
+      predmet=r_s_smer[2];
+    }
+    else{
+      return false;
+    }
+//cout<<"///"<<rad_sl<<","<<predmet<<"///"<<endl;
+    if(!(rad_sl%2)&&(rad_sl>0)&&(rad_sl<hraci_plocha->rozmer())){
+      switch (predmet) {
+        case 'W':
+//          cout<<"Posun "<<rad_sl<<". sloupec nahoru."<<endl;
+          hraci_plocha->posun_sloupec(rad_sl,false);
+          break;
+
+        case 'A':
+          hraci_plocha->posun_radek(rad_sl,false);
+//          cout<<"Posun "<<rad_sl<<". radek doleva."<<endl;
+          break;
+
+        case 'S':
+          hraci_plocha->posun_sloupec(rad_sl,true);
+//          cout<<"Posun "<<rad_sl<<". sloupec dolu."<<endl;
+          break;
+
+        case 'D':
+          hraci_plocha->posun_radek(rad_sl,true);
+//          cout<<"Posun "<<rad_sl<<". radek doprava."<<endl;
+          break;
+
+        default:
+          return false;
+          break;
+      }
+      return true;
+    }
+    else {
+      return false;
+    }
+//      r_s_smer>>
+//      cout<<r_s_smer[1];
+//      return true;
+
+//    for (unsigned i=0; i<sm.size(); ++i) {
+//        std::cout << "[" << sm[i] << "] ";
+//    }
+
+    //cout<<r_s_smer.length()<<endl;
 
 
 //    if((rad_sl%2)&&(rad_sl>0)&&(rad_sl<hra->))
 //      if (cin.fail()){  //nebylo zadano cislo
 //        cin.clear();
 //        cin.ignore(256,'\n');
-    return true;
+    return false;
   }
 
+
+  /**
+   * @brief Natoci volny kamen
+   * @param n udava natoceni n*90° n€<0;3>
+   */
   void natoceni_volneho_kamene(int n){
     hraci_plocha->v[0]->zmen_natoceni(n);
+  }
+
+
+  /**
+   * @brief Vraci pocet hracu ve hre
+   * @return vrati pocet hracu
+   */
+  int pocet_hracu(){
+    return poc_hracu;
   }
 
 
@@ -730,32 +843,63 @@ public:
 
 
 /**
+ * @brief Prevede male znaky anglicke abecedy na velke
+ * @param retezec je reference na string, ktery se prevest
+ */
+void velka_pismena(string &retezec){
+  for(unsigned i=0;i<retezec.length();i++){
+    if((retezec[i]>='a')&&(retezec[i]<='z'))
+      retezec[i]+='A'-'a';
+  }
+}
+
+
+/**
+ * @brief Posune obrazovku o 5OO radku
+ */
+void smaz_obrazovku(){
+  for(int i=0;i<10;i++)
+    cout<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl
+         <<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl
+          <<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl
+           <<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl
+            <<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl<<endl;
+}
+
+
+/**
  * @brief Rozbehne program
  *
  * @return vraci nulu pokud vse probehlo v poradku
  */
 int main() {
-
   Hra *hra=new Hra;
+  string zprava{""};
   //int rad_sl; //cislo radku/sloupce
 
 //  cout<<"Pocet tvaru: "<<endl<<"I: "<<Kamen::count_I<<endl<<
 //      "L: "<<Kamen::count_L<<endl<<"T: "<<Kamen::count_T<<endl<<endl; //SMAZ
 
-  string vstup="";
-  int stav=NATOCENI;
-//  cout<<"Natoc volny kamen (W,A,S,D-natoceni, N-preskocit):";
+  string vstup{""};
+  int stav{DALSI_HRAC},hrac{0};
+  int poc_hracu{hra->pocet_hracu()};
+
+//  cout<<"Natoc volny kamen (W,A,S,D-natocit, N-preskocit):";
 //  cin.clear();
 //  cin>>vstup;
   while(true) {
+    smaz_obrazovku();
     hra->vykreslit_terminal();
+    cout<<zprava;
+    zprava="";
     cin.clear();
+//    cin.ignore(256,'\n');
 
     if(vstup=="N"){
       if(stav==NATOCENI)
         stav=POSUNUTI;
       else if (stav==POHYB) {
-        stav=NATOCENI;
+        stav=DALSI_HRAC;
       }
     }
     if(vstup=="Q"){
@@ -763,10 +907,26 @@ int main() {
     }
 
     switch (stav) {
+      case DALSI_HRAC:
+//        cout << "\033[2J" << flush;
+//        cout.clear();
+        hrac=(hrac%poc_hracu)+1;  //dalsi hrac
+        smaz_obrazovku();
+        cout<<"Na tahu je hrac "<<hrac<<endl<<
+              "pokracujte zmacknutim klavesy Enter"<<endl;
+        getchar();  //stisk klavesy
+        cin.ignore(256,'\n'); //uklid smeti - kdyby bylo zadano vice znaku
+
+        stav=NATOCENI;
+        break;
+
       case NATOCENI:
         cout<<"Natoc volny kamen (W,A,S,D-natoceni, N-preskocit):";
         cin>>vstup;
-        if(vstup=="W")
+        velka_pismena(vstup);
+        if(vstup=="N")
+          break;
+        else if(vstup=="W")
           hra->natoceni_volneho_kamene(0);
         else if(vstup=="A")
           hra->natoceni_volneho_kamene(3);
@@ -774,29 +934,55 @@ int main() {
           hra->natoceni_volneho_kamene(2);
         else if(vstup=="D")
           hra->natoceni_volneho_kamene(1);
+        else
+          zprava="!!!Spatny format vstupu!!!\n";
 //        if(vstup=="Q")
 //          hra->uloz_hru();
 
         break;
 
       case POSUNUTI:
-        cout<<"Posun radek/sloupec vlozenim volneho kamene:";
+        cout<<"Posun radek/sloupec ([cislo radku/sloupce][smer]):";
 //        cout<<"Cislo radku/sloupce k posunuti (pouze suda cisla):";
 //        cin>>rad_sl;
 //        cout<<"Smer posunuti (W-nahoru, A-vlevo, S-dolu, D-vpravo):";
 //        cin>>rad_sl;
 
-        do {
-          cin.clear();
-          cin>>vstup;
-          if(vstup=="Q"){
-            stav=ULOZ;
-            break;
-          }
-        }while(!hra->posun_rad_sl(vstup));
+//        do {
+        cin.clear();
+        cin>>vstup; //TODO upper case - všechny mala pismena prevest na velka
+        velka_pismena(vstup);
+        if(vstup=="Q"){
+          stav=ULOZ;
+          break;
+        }
+//        }while(!hra->posun_rad_sl(vstup));
+        if(hra->posun_rad_sl(vstup))
+          stav=POHYB;
+        else
+          zprava="Spatny format. Napr.: 4D posune 4.radek doprava\n"
+                 "format: cs (c-sude cislo;s-smer pohybu WASD)\n";
+
         break;
+//        break;
 
       case POHYB:
+        cout<<"Pohybujte figurkou (W,A,S,D - pohyb, N - ukonceni tahu):";
+
+        cin>>vstup;
+        velka_pismena(vstup);
+        for(unsigned i=0;i<vstup.length();i++){
+          if((vstup[i]=='W')||(vstup[i]=='A')||
+             (vstup[i]=='S')||(vstup[i]=='D')){
+            hra->posun_hrace(hrac,vstup[i]);  //TODO - vytvorit funkci posun_hrace
+          }
+          else if(vstup[i]=='N')
+            break;
+          else
+            zprava="Zadan jiny znak nez W,A,S,D nebo N\n";
+        }
+//        zprava="vykonan pohyb\n"; //SMAZAT
+        //stav=DALSI_HRAC;
         break;
 
       case ULOZ:
