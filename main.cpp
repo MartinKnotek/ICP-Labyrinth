@@ -19,6 +19,7 @@
 * Tento soubor obsahuje projekt do ICP.
 *
 * @todo Dopsat komentář @brief v hlavnim popisu
+*     //TODO Dalsi tah nesmi byt reverzi predchoziho tahu
 */
 
 
@@ -38,6 +39,7 @@
 #define POHYB 3
 #define ULOZ 4
 #define DALSI_HRAC 5
+#define VITEZSTVI 6
 using namespace std;
 
 
@@ -73,6 +75,14 @@ public:
     //Musi se zadat I,L nebo T, jinak se nic neprovede
   }
 
+
+  /**
+   * @brief Vraci predmet, ktery je na kameni
+   * @return vrati predmet na kameni
+   */
+  char vrat_predmet(){
+    return predmet;
+  }
 
   /**
    * @brief Zmeni natoceni kamene
@@ -124,17 +134,6 @@ class Deska{
   int neg_I,neg_L,neg_T;  //viz metoda vytvor_nahodny_kamen()
   int pom;
   Kamen *aktual;  //pomocna promenna pro metodu pruchodny_smer()
-
-
-  /**
-   * @brief prepocte souradnice i,j na index vektoru
-   * @param i radek
-   * @param j sloupec
-   * @return vraci prepocitane souradnice
-   */
-  int souradnice(int i,int j){
-    return (i-1)*N+j;
-  }
 
 
   /**
@@ -233,46 +232,13 @@ class Deska{
 
 
   /**
-   * @brief Zjisti zda ma kamen pruchodnou stranu v danem smeru
-   * @param smer W - sever, S -jih, A - zapad, D - vychod
-   * @param i souradnice - radek
-   * @param j souradnice - sloupec
-   * @return vraci true pokud je kamen v danem smeru pruchodny, jinak false
+   * @brief prepocte souradnice i,j na index vektoru
+   * @param i radek
+   * @param j sloupec
+   * @return vraci prepocitane souradnice
    */
-  bool pruchodny_smer(char smer,int i,int j){
-    aktual=v[souradnice(i,j)];
-    switch (smer){
-    case 'W':
-      if(((aktual->tvar=='I')&&((aktual->natoceni==1)||(aktual->natoceni==3)))||
-        ((aktual->tvar=='L')&&((aktual->natoceni==1)||(aktual->natoceni==2)))||
-        ((aktual->tvar=='T')&&(aktual->natoceni==0)))
-        return false;
-      else return true;
-      break;
-    case 'S':
-      if(((aktual->tvar=='I')&&((aktual->natoceni==1)||(aktual->natoceni==3)))||
-        ((aktual->tvar=='L')&&((aktual->natoceni==0)||(aktual->natoceni==3)))||
-        ((aktual->tvar=='T')&&(aktual->natoceni==2)))
-        return false;
-      else return true;
-      break;
-    case 'A':
-      if(((aktual->tvar=='I')&&((aktual->natoceni==0)||(aktual->natoceni==2)))||
-        ((aktual->tvar=='L')&&((aktual->natoceni==0)||(aktual->natoceni==1)))||
-        ((aktual->tvar=='T')&&(aktual->natoceni==3)))
-        return false;
-      else return true;
-      break;
-    case 'D':
-      if(((aktual->tvar=='I')&&((aktual->natoceni==0)||(aktual->natoceni==2)))||
-        ((aktual->tvar=='L')&&((aktual->natoceni==2)||(aktual->natoceni==3)))||
-        ((aktual->tvar=='T')&&(aktual->natoceni==1)))
-        return false;
-      else return true;
-      break;
-    }
-    cerr<<"Chyba - spatny parametr metody pruchodny_smer(char smer,int i,int j)";
-    return false;
+  int souradnice(int i,int j){
+    return (i-1)*N+j;
   }
 
 public:
@@ -322,6 +288,50 @@ public:
 
 
   /**
+   * @brief Zjisti zda ma kamen pruchodnou stranu v danem smeru
+   * @param smer W - sever, S -jih, A - zapad, D - vychod
+   * @param i souradnice - radek
+   * @param j souradnice - sloupec
+   * @return vraci true pokud je kamen v danem smeru pruchodny, jinak false
+   */
+  bool pruchodny_smer(char smer,int i,int j){
+    aktual=v[souradnice(i,j)];
+    switch (smer){
+    case 'W':
+      if(((aktual->tvar=='I')&&((aktual->natoceni==1)||(aktual->natoceni==3)))||
+        ((aktual->tvar=='L')&&((aktual->natoceni==1)||(aktual->natoceni==2)))||
+        ((aktual->tvar=='T')&&(aktual->natoceni==0)))
+        return false;
+      else return true;
+      break;
+    case 'S':
+      if(((aktual->tvar=='I')&&((aktual->natoceni==1)||(aktual->natoceni==3)))||
+        ((aktual->tvar=='L')&&((aktual->natoceni==0)||(aktual->natoceni==3)))||
+        ((aktual->tvar=='T')&&(aktual->natoceni==2)))
+        return false;
+      else return true;
+      break;
+    case 'A':
+      if(((aktual->tvar=='I')&&((aktual->natoceni==0)||(aktual->natoceni==2)))||
+        ((aktual->tvar=='L')&&((aktual->natoceni==0)||(aktual->natoceni==1)))||
+        ((aktual->tvar=='T')&&(aktual->natoceni==3)))
+        return false;
+      else return true;
+      break;
+    case 'D':
+      if(((aktual->tvar=='I')&&((aktual->natoceni==0)||(aktual->natoceni==2)))||
+        ((aktual->tvar=='L')&&((aktual->natoceni==2)||(aktual->natoceni==3)))||
+        ((aktual->tvar=='T')&&(aktual->natoceni==1)))
+        return false;
+      else return true;
+      break;
+    }
+    cerr<<"Chyba - spatny parametr metody pruchodny_smer(char smer,int i,int j)";
+    return false;
+  }
+
+
+  /**
    * @brief Posune sloupec dolu nebo nahoru
    * @param c_sloupce je cislo sloupce
    * @param dolu true - dolu, false - nahoru
@@ -345,6 +355,26 @@ public:
   }
 
 
+  /**
+   * @brief Vraci ukazatel na kamen
+   * @param pozice je pozice ukazatele ve vektoru
+   * @return vrati ukazatel na kamen
+   */
+  Kamen *vrat_kamen(int pozice){
+    return v[pozice];
+  }
+
+
+  /**
+   * @brief Vraci ukazatel na kamen
+   * @param x je souradnice radku
+   * @param y je souradnice sloupce
+   * @return vrati ukazatel na kamen
+   */
+  Kamen *vrat_kamen(int x,int y){
+    return vrat_kamen(souradnice(x,y));
+  }
+
 //  void vykresli_bod(Kamen *k){
 //    for
 //    if (k!=nullptr)
@@ -363,8 +393,9 @@ public:
 */
 class Hrac{
   int x,y;  //pozice na hraci desce
+  int body{0};
   Deska *deska;
-  char hledany_predmet{'_'};
+  char hledany_predmet{'-'};
 public:
   /**
    * @brief Konstruktor
@@ -388,6 +419,7 @@ public:
     return x;
   }
 
+
   /**
    * @brief Cislo sloupce, na kterem se hrac nachazi
    * @return vrati cislo sloupce, na kterem se dany hrac nachazi
@@ -396,9 +428,124 @@ public:
     return y;
   }
 
-  void posun(char smer){
-    cout<<"posun hrace"<<endl;
-    x++;y++;
+
+  /**
+   * @brief Vraci hledany predmet
+   * @return vrati predmet, ktery ma hrac hledat
+   */
+  char vrat_hledany_predmet(){
+    return hledany_predmet;
+  }
+
+
+  /**
+   * @brief Vezme si kartu s hledanym predmetem
+   * @param karta oznacuje hledany predmet
+   */
+  void vzit_kartu(char karta){
+    hledany_predmet=karta;
+  }
+
+
+  /**
+   * @brief Prida hraci bod
+   */
+  void pridej_bod(){
+    body++;
+  }
+
+
+  /**
+   * @brief Vraci pocet ziskanych bodu
+   * @return vrati body hrace
+   */
+  int vrat_body(){
+    return body;
+  }
+
+
+  /**
+   * @brief Posune hrace danym smerem bez ohledu na prekazky.
+   *
+   * Pokud se posune ven z hraci plochy, objevi se na opacne strane plochy
+   * @param smer udava smer pohybu (W,A,S,D)
+   */
+  void posun_hrace(char smer){
+    int N=deska->rozmer();
+    switch (smer) {
+      case 'W':
+        x--;
+        if(!x)
+          x=N;
+        break;
+
+      case 'A':
+        y--;
+        if(!y)
+          y=N;
+        break;
+
+      case 'S':
+        x=(x%N)+1;
+        break;
+
+      case 'D':
+        y=(y%N)+1;
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  /**
+   * @brief Posune hrace danym smerem po hraci plose
+   *
+   * Hrac se neposune pokud se snazi pohybovat proti zdi, ci za hraci plochu
+   * @param smer udava smer pohybu (W,A,S,D)
+   */
+  void posun_po_desce(char smer){
+    if(deska->pruchodny_smer(smer,x,y))
+      switch (smer) {
+        case 'W':
+          if (x!=1){  //neni na hornim okraji hraci plochy
+            //a na kameni, na ktery se presouva, neni v ceste zed
+            if(deska->pruchodny_smer('S',x-1,y))
+              x--;  //tak posun hrace
+          }
+          break;
+        case 'A':
+          if (y!=1){ //neni na levem okraji hraci plochy
+            //a na kameni, na ktery se presouva, neni v ceste zed
+            if(deska->pruchodny_smer('D',x,y-1))
+              y--;  //tak posun hrace
+          }
+          break;
+        case 'S':
+          if (x!=deska->rozmer()){ //neni na dolnim okraji hraci plochy
+            //a na kameni, na ktery se presouva, neni v ceste zed
+            if(deska->pruchodny_smer('W',x+1,y))
+              x++;  //tak posun hrace
+          }
+          break;
+        case 'D':
+          if (y!=deska->rozmer()){ //neni na pravem okraji hraci plochy
+            //a na kameni, na ktery se presouva, neni v ceste zed
+            if(deska->pruchodny_smer('A',x,y+1))
+              y++;//tak posun hrace
+          }
+          break;
+        default:
+          return;
+          break;
+      }
+//    if(deska->vrat_kamen(x,y)->vrat_predmet()==hledany_predmet){
+//      hledany_predmet='-';
+//      body++;
+//    }
+
+//    cout<<"posun hrace"<<endl;
+//    x++;y++;
   }
 };
 
@@ -481,7 +628,6 @@ class Hra{
    *
    * Zkontroluje zda je ziskany pocet karet v mezich a pote pomoci tohoto
    * poctu vytvori dany pocet karet
-   * @todo vytvorit ukolove karty
    * @return vraci true, pokud byl ziskany pocet karet v mezich, jinak false
    */
   bool nastaveni_poctu_karet(){
@@ -594,12 +740,58 @@ public:
 
 
   /**
+   * @brief Zjisti zda ma dany hrac dostatek bodu pro vitezstvi
+   * @param c_hrace je oznaceni hrace <1;4>
+   * @return vraci true, pokud hrac dosahl dostatecneho poctu bodu, jinak false
+   */
+  bool vyhral(int c_hrace){
+    if(hrac[c_hrace-1]->vrat_body()>=(poc_karet/poc_hracu))
+      return true;
+    return false;
+  }
+
+  /**
    * @brief Posune hrace po hraci plose
    * @param c_hrace je oznaceni hrace <1;4>
    * @param smer udava smer pohybu (W,A,S,D)
    */
-  void posun_hrace(int c_hrace,char smer){
-    hrac[c_hrace-1]->posun(smer); //hraci jsou cislovany od nuly
+  void pohyb_hrace(int c_hrace,char smer){
+    hrac[c_hrace-1]->posun_po_desce(smer); //hraci jsou cislovany od nuly
+  }
+
+
+  /**
+   * @brief Zjisti, zda hrac stoji na karte s predmetem ktery hleda
+   *
+   * pokud ano, pak se hraci pricte bod, odlozi kartu s timto predmetem a
+   * predmet je odstranen z hraci plochy
+   * @param c_hrace je oznaceni hrace <1;4>
+   * @return vraci true, pokud je hrac na policku s predmetem ktery hleda,
+   * jinak vraci false
+   */
+  bool nasel_hrac_predmet(int c_hrace){
+    int x=hrac[c_hrace-1]->radek();
+    int y=hrac[c_hrace-1]->sloupec();
+    if (hraci_plocha->vrat_kamen(x,y)->vrat_predmet()==
+        hrac[c_hrace-1]->vrat_hledany_predmet()){
+      hrac[c_hrace-1]->pridej_bod();
+      hrac[c_hrace-1]->vzit_kartu('-');
+      hraci_plocha->vrat_kamen(x,y)->zmen_predmet(' ');
+      return true;
+    }
+    return false;
+  }
+
+
+  /**
+   * @brief Pokud dany hrac nema kartu, pak si vezme kartu z balicku
+   * @param c_hrace je oznaceni hrace <1;4>
+   */
+  void vzit_kartu(int c_hrace){
+    if (hrac[c_hrace-1]->vrat_hledany_predmet()=='-'){
+      hrac[c_hrace-1]->vzit_kartu(balicek_karet.back());
+      balicek_karet.pop_back();
+    }
   }
 
   /**
@@ -613,40 +805,56 @@ public:
    * @return vraci true, pokud retezec vyhovuje formatu, jinak false
    */
   bool posun_rad_sl(string r_s_smer){
+    //TODO zkontrolovat, zda se nepresouva hrac na druhou stranu hraci plochy
+    //posouvani radku
     int rad_sl;
-    char predmet;
+    char smer;
+    //ziskani hodnot z retezce
     if(r_s_smer.length()==2){
       rad_sl=r_s_smer[0]-'0';
-      predmet=r_s_smer[1];
+      smer=r_s_smer[1];
     }
     else if(r_s_smer.length()==3){
       rad_sl=10*(r_s_smer[0]-'0')+r_s_smer[1]-'0';
-      predmet=r_s_smer[2];
+      smer=r_s_smer[2];
     }
     else{
       return false;
     }
-//cout<<"///"<<rad_sl<<","<<predmet<<"///"<<endl;
+    //------------------------------
+    //kontrola na sudost a zda je radek/sloupec uvnitr hraci plochy
     if(!(rad_sl%2)&&(rad_sl>0)&&(rad_sl<hraci_plocha->rozmer())){
-      switch (predmet) {
+      switch (smer) {
         case 'W':
-//          cout<<"Posun "<<rad_sl<<". sloupec nahoru."<<endl;
+          //posune dany sloupec nahoru
           hraci_plocha->posun_sloupec(rad_sl,false);
+          for (int i=0;i<poc_hracu;i++)
+            if(hrac[i]->sloupec()==rad_sl)
+              hrac[i]->posun_hrace(smer);
           break;
 
         case 'A':
+          //posune dany radek doleva
           hraci_plocha->posun_radek(rad_sl,false);
-//          cout<<"Posun "<<rad_sl<<". radek doleva."<<endl;
+          for (int i=0;i<poc_hracu;i++)
+            if(hrac[i]->radek()==rad_sl)
+              hrac[i]->posun_hrace(smer);
           break;
 
         case 'S':
+          //posune dany sloupec dolu
           hraci_plocha->posun_sloupec(rad_sl,true);
-//          cout<<"Posun "<<rad_sl<<". sloupec dolu."<<endl;
+          for (int i=0;i<poc_hracu;i++)
+            if(hrac[i]->sloupec()==rad_sl)
+              hrac[i]->posun_hrace(smer);
           break;
 
         case 'D':
+          //posune dany radek doprava
           hraci_plocha->posun_radek(rad_sl,true);
-//          cout<<"Posun "<<rad_sl<<". radek doprava."<<endl;
+          for (int i=0;i<poc_hracu;i++)
+            if(hrac[i]->radek()==rad_sl)
+              hrac[i]->posun_hrace(smer);
           break;
 
         default:
@@ -655,24 +863,6 @@ public:
       }
       return true;
     }
-    else {
-      return false;
-    }
-//      r_s_smer>>
-//      cout<<r_s_smer[1];
-//      return true;
-
-//    for (unsigned i=0; i<sm.size(); ++i) {
-//        std::cout << "[" << sm[i] << "] ";
-//    }
-
-    //cout<<r_s_smer.length()<<endl;
-
-
-//    if((rad_sl%2)&&(rad_sl>0)&&(rad_sl<hra->))
-//      if (cin.fail()){  //nebylo zadano cislo
-//        cin.clear();
-//        cin.ignore(256,'\n');
     return false;
   }
 
@@ -705,7 +895,6 @@ public:
   }
 
 
-
   /**
    * @brief Vypise obsah balicku ukolovych karet
    */
@@ -723,8 +912,9 @@ public:
    * @brief Vykresli hraci desku pomoci textove grafiky
    *
    * Vykresluje do terminalu - pouziva se pouze textova grafika
+   * @param c_hrace je oznaceni hrace <1;4>
    */
-  void vykreslit_terminal(){
+  void vykreslit_terminal(int c_hrace){
     int N=hraci_plocha->rozmer();
     int radek{1};
     cout<<"   ";
@@ -765,7 +955,9 @@ public:
 //
 //      cout<<endl;
 //    }
-    cout<<"volny kamen: "<<endl;
+    cout<<"volny kamen:   Hledany predmet:"<<
+          hrac[c_hrace-1]->vrat_hledany_predmet()<<
+          "   Karet v balicku zbyva:"<<balicek_karet.size()<<endl;
     vykresli_kamen_1(SOURADNICE_VOLNY_KAMEN);
     cout<<endl;
     vykresli_kamen_2(SOURADNICE_VOLNY_KAMEN);
@@ -773,10 +965,21 @@ public:
     vykresli_kamen_3(SOURADNICE_VOLNY_KAMEN);
     cout<<endl;
 
-    cout<<"Balicek karet:";
-    vypis_balicek();
+//    cout<<"Balicek karet:";
+//    vypis_balicek();
+    vypis_body_hracu();
   }
 
+
+  /**
+   * @brief Na jeden radek vypise body hracu
+   */
+  void vypis_body_hracu(){
+    cout<<"Body - ";
+    for(int i=0;i<poc_hracu;i++)
+      cout<<"hrac "<<i+1<<" ma "<<hrac[i]->vrat_body()<<"b; ";
+    cout<<"- k vitezstvi:"<<poc_karet/poc_hracu<<"b"<<endl;
+  }
 
   /**
    * @brief Vykresli prvni cast kamene leziciho na souradnicich x,y
@@ -816,7 +1019,7 @@ public:
     //cesta na zapad
     cout<<(hraci_plocha->pruchodny_smer('A',i,j)?' ':'#');
     //predmet
-    cout<<hraci_plocha->v[hraci_plocha->souradnice(i,j)]->predmet;
+    cout<<hraci_plocha->v[hraci_plocha->souradnice(i,j)]->vrat_predmet();
     //cesta na vychod
     cout<<(hraci_plocha->pruchodny_smer('D',i,j)?' ':'#');
     cout<<"|";
@@ -881,27 +1084,28 @@ int main() {
 //      "L: "<<Kamen::count_L<<endl<<"T: "<<Kamen::count_T<<endl<<endl; //SMAZ
 
   string vstup{""};
-  int stav{DALSI_HRAC},hrac{0};
+  int stav{DALSI_HRAC};
   int poc_hracu{hra->pocet_hracu()};
+  int hrac{poc_hracu};
 
 //  cout<<"Natoc volny kamen (W,A,S,D-natocit, N-preskocit):";
 //  cin.clear();
 //  cin>>vstup;
   while(true) {
     smaz_obrazovku();
-    hra->vykreslit_terminal();
+    hra->vykreslit_terminal(hrac);
     cout<<zprava;
     zprava="";
     cin.clear();
 //    cin.ignore(256,'\n');
 
-    if(vstup=="N"){
-      if(stav==NATOCENI)
-        stav=POSUNUTI;
-      else if (stav==POHYB) {
-        stav=DALSI_HRAC;
-      }
-    }
+//    if(vstup=="N"){
+//      if(stav==NATOCENI)
+//        stav=POSUNUTI;
+//      else if (stav==POHYB) {
+//        stav=DALSI_HRAC;
+//      }
+//    }
     if(vstup=="Q"){
       stav=ULOZ;
     }
@@ -911,6 +1115,7 @@ int main() {
 //        cout << "\033[2J" << flush;
 //        cout.clear();
         hrac=(hrac%poc_hracu)+1;  //dalsi hrac
+        hra->vzit_kartu(hrac); //hrac si vezme kartu, ale jen kdyz zadnou nema
         smaz_obrazovku();
         cout<<"Na tahu je hrac "<<hrac<<endl<<
               "pokracujte zmacknutim klavesy Enter"<<endl;
@@ -918,14 +1123,17 @@ int main() {
         cin.ignore(256,'\n'); //uklid smeti - kdyby bylo zadano vice znaku
 
         stav=NATOCENI;
+        vstup=="";
         break;
 
       case NATOCENI:
         cout<<"Natoc volny kamen (W,A,S,D-natoceni, N-preskocit):";
         cin>>vstup;
         velka_pismena(vstup);
-        if(vstup=="N")
+        if(vstup=="N"){
+          stav=POSUNUTI;
           break;
+        }
         else if(vstup=="W")
           hra->natoceni_volneho_kamene(0);
         else if(vstup=="A")
@@ -974,10 +1182,25 @@ int main() {
         for(unsigned i=0;i<vstup.length();i++){
           if((vstup[i]=='W')||(vstup[i]=='A')||
              (vstup[i]=='S')||(vstup[i]=='D')){
-            hra->posun_hrace(hrac,vstup[i]);  //TODO - vytvorit funkci posun_hrace
+            hra->pohyb_hrace(hrac,vstup[i]);
           }
-          else if(vstup[i]=='N')
+          else if(vstup[i]=='N'){
+            //zjisteni zda hrac nenasel predmet
+            if (hra->nasel_hrac_predmet(hrac)){
+              cout<<"Ziskan predmet. (pokracujte zmacknutim klavesy Enter)"
+                 <<endl;
+              getchar();  //stisk klavesy
+              cin.ignore(256,'\n'); //uklid smeti-kdyby bylo zadano vice znaku
+              if (hra->vyhral(hrac)){
+                stav=VITEZSTVI;
+                break;
+              }
+            }
+
+
+            stav=DALSI_HRAC;
             break;
+          }
           else
             zprava="Zadan jiny znak nez W,A,S,D nebo N\n";
         }
@@ -988,6 +1211,14 @@ int main() {
       case ULOZ:
         hra->uloz_hru();
         exit(0);
+        break;
+
+      case VITEZSTVI:
+        cout<<"Vyhral hrac "<<hrac<<". (pokracujte zmacknutim klavesy Enter)"
+           <<endl;
+        getchar();  //stisk klavesy
+        cin.ignore(256,'\n'); //uklid smeti-kdyby bylo zadano vice znaku
+        return 0;
         break;
 
       default:
