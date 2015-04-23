@@ -19,7 +19,6 @@
 * Tento soubor obsahuje projekt do ICP.
 *
 * @todo Dopsat komentář @brief v hlavnim popisu
-*     //TODO Dalsi tah nesmi byt reverzi predchoziho tahu
 */
 
 
@@ -31,15 +30,15 @@
 #include <iomanip>
 #include <string>
 #include <regex>
-//#include "main.h"
 
+/// definuje souradnice volneho kamene pro funkci souradnice()
 #define SOURADNICE_VOLNY_KAMEN 1,0
-#define NATOCENI 1
-#define POSUNUTI 2
-#define POHYB 3
-#define ULOZ 4
-#define DALSI_HRAC 5
-#define VITEZSTVI 6
+#define NATOCENI 1  ///< stav konecneho automatu
+#define POSUNUTI 2  ///< stav konecneho automatu
+#define POHYB 3     ///< stav konecneho automatu
+#define ULOZ 4      ///< stav konecneho automatu
+#define DALSI_HRAC 5  ///< stav konecneho automatu
+#define VITEZSTVI 6 ///< stav konecneho automatu
 using namespace std;
 
 
@@ -55,9 +54,9 @@ class Kamen{
   friend class Hra; //trida Hra muze pristupovat k private tridy Kamen
   char tvar{0}, predmet{' '};
   int natoceni{0};
+
 public:
   static int count_I, count_L, count_T;
-
 
   /**
    * @brief Konstruktor
@@ -75,7 +74,6 @@ public:
     //Musi se zadat I,L nebo T, jinak se nic neprovede
   }
 
-
   /**
    * @brief Vraci predmet, ktery je na kameni
    * @return vrati predmet na kameni
@@ -92,7 +90,6 @@ public:
     natoceni=n;
   }
 
-
   /**
    * @brief Zmeni tvar kamene
    * @param t je tvar kamene [I,L,T]
@@ -108,15 +105,10 @@ public:
   void zmen_predmet(char p){
     predmet=p;
   }
-
-
-//  ///@brief
-//  ///@param
-//  Kamen op_s_predmet(char operace);
 };
-int Kamen::count_I=0;
-int Kamen::count_L=0;
-int Kamen::count_T=0;
+int Kamen::count_I=0; ///< pocitadlo kamenu tvaru I
+int Kamen::count_L=0; ///< pocitadlo kamenu tvaru L
+int Kamen::count_T=0; ///< pocitadlo kamenu tvaru T
 
 
 /**
@@ -128,13 +120,12 @@ int Kamen::count_T=0;
 */
 class Deska{
   friend class Hra; //trida Hra muze pristupovat k private tridy Deska
-  int N;  //delka strany hraci desky
-  vector<Kamen*> v;
+  int N;  ///< delka strany hraci desky
+  vector<Kamen*> v; ///< 2D plocha v jednom vektoru
   int nahodne;  //pro ulozeni hodnoty z random funkce
   int neg_I,neg_L,neg_T;  //viz metoda vytvor_nahodny_kamen()
   int pom;
   Kamen *aktual;  //pomocna promenna pro metodu pruchodny_smer()
-
 
   /**
    * @brief vytvori volny kamen
@@ -151,7 +142,6 @@ class Deska{
       vytvor_nahodny_kamen(SOURADNICE_VOLNY_KAMEN);
   }
 
-
   /**
   * @brief Rozmisti kameny na hraci desku
   */
@@ -159,7 +149,6 @@ class Deska{
     srand(time(0)); // pouziti aktualniho casu jako 'seed' pro random generator
     for(int i=1;i<=N;i+=2)  //liche radky
     for(int j=1;j<=N;j+=2){ //liche sloupce
-//      cout<<"pridavam na souradnice "<<i<<" "<<j<<endl; //SMAZ
       v[souradnice(i,j)]=new Kamen('T',rand()%4,' ');
     }
     //rohove kameny - tvar a natoceni
@@ -182,25 +171,18 @@ class Deska{
       v[souradnice(i,1)]->zmen_natoceni(3); //leva strana
     }
 
-//    cout<<"Pocet tvaru 1: "<<endl<<"I: "<<Kamen::count_I<<endl<<
-//      "L: "<<Kamen::count_L<<endl<<"T: "<<Kamen::count_T<<endl<<endl; //SMAZ
-
     //pomocna promena pro vypocet neg_[I,L,T] v metode vytvor_nahodny_kamen
     pom=(N%3?(N*N/3)+1:N*N/3);
-    //srand(time(0)); // pouziti aktualniho casu jako 'seed' pro random generator
     for(int i=1;i<=N;i+=2)  //liche radky
     for(int j=2;j<N;j+=2){  //sude sloupce
       vytvor_nahodny_kamen(i,j);
     }
-//    cout<<"Pocet tvaru 2: "<<endl<<"I: "<<Kamen::count_I<<endl<<
-//      "L: "<<Kamen::count_L<<endl<<"T: "<<Kamen::count_T<<endl<<endl; //SMAZ
     for(int i=2;i<N;i+=2) //sude radky
     for(int j=1;j<=N;j++){  //vsechny sloupce
       vytvor_nahodny_kamen(i,j);
     }
     vytvor_volny_kamen();  //vytvori volny kamen (kamen mimo hraci desku)
   }
-
 
   /**
    * @brief Vytvori nahodny kamen
@@ -215,21 +197,15 @@ class Deska{
     neg_I=pom-Kamen::count_I; //0-n %
     neg_L=pom-Kamen::count_L; //n-m %
     neg_T=pom-Kamen::count_T; //m-100 %
-
-//    cout<<"neg_I: "<<neg_I<<"   "<<rand()%4<<endl;  //SMAZ
-//    cout<<"neg_L: "<<neg_L<<endl;  //SMAZ
-//    cout<<"neg_T: "<<neg_T<<endl;  //SMAZ
-
     nahodne=rand()%(neg_I+neg_L+neg_T);  //0-100 procent
 
-    if (nahodne<neg_I)
+    if (nahodne<neg_I)  //0-n %
       v[souradnice(i,j)]=new Kamen('I',rand()%4,' ');
-    else if (nahodne<neg_L+neg_I)
+    else if (nahodne<neg_L+neg_I) //n-m %
       v[souradnice(i,j)]=new Kamen('L',rand()%4,' ');
-    else
+    else  //m-100 %
       v[souradnice(i,j)]=new Kamen('T',rand()%4,' ');
   }
-
 
   /**
    * @brief prepocte souradnice i,j na index vektoru
@@ -242,6 +218,7 @@ class Deska{
   }
 
 public:
+
   /**
    * @brief Konstruktor
    *
@@ -254,7 +231,6 @@ public:
     rozmisti_kameny();
   }
 
-
   /**
    * @brief Vrati rozmer hraci desky
    * @return vraci rozmer hraci desky
@@ -264,7 +240,53 @@ public:
   }
 
   /**
+   * @brief Zjisti zda ma kamen pruchodnou stranu v danem smeru
+   * @param smer W - sever, S -jih, A - zapad, D - vychod
+   * @param i souradnice - radek
+   * @param j souradnice - sloupec
+   * @return vraci true pokud je kamen v danem smeru pruchodny, jinak false
+   */
+  bool pruchodny_smer(char smer,int i,int j){
+    aktual=v[souradnice(i,j)];
+    switch (smer){
+    case 'W':
+      if(((aktual->tvar=='I')&&((aktual->natoceni==1)||(aktual->natoceni==3)))
+         ||((aktual->tvar=='L')&&((aktual->natoceni==1)||(aktual->natoceni==2)))
+         ||((aktual->tvar=='T')&&(aktual->natoceni==0)))
+        return false;
+      else return true;
+      break;
+    case 'S':
+      if(((aktual->tvar=='I')&&((aktual->natoceni==1)||(aktual->natoceni==3)))
+        ||((aktual->tvar=='L')&&((aktual->natoceni==0)||(aktual->natoceni==3)))
+        ||((aktual->tvar=='T')&&(aktual->natoceni==2)))
+        return false;
+      else return true;
+      break;
+    case 'A':
+      if(((aktual->tvar=='I')&&((aktual->natoceni==0)||(aktual->natoceni==2)))
+        ||((aktual->tvar=='L')&&((aktual->natoceni==0)||(aktual->natoceni==1)))
+        ||((aktual->tvar=='T')&&(aktual->natoceni==3)))
+        return false;
+      else return true;
+      break;
+    case 'D':
+      if(((aktual->tvar=='I')&&((aktual->natoceni==0)||(aktual->natoceni==2)))
+        ||((aktual->tvar=='L')&&((aktual->natoceni==2)||(aktual->natoceni==3)))
+        ||((aktual->tvar=='T')&&(aktual->natoceni==1)))
+        return false;
+      else return true;
+      break;
+    }
+    cerr<<"Chyba-spatny parametr metody pruchodny_smer(char smer,int i,int j)";
+    return false;
+  }
+
+  /**
    * @brief Posune radek doprava nebo doleva
+   *
+   * Vsune na zacatek/konec radku volny kamen a kamen vytlaceny z druhe
+   * strany se stane volnym kamenem
    * @param c_radku je cislo radku
    * @param doprava true - doprava, false - doleva
    */
@@ -286,53 +308,11 @@ public:
     }
   }
 
-
-  /**
-   * @brief Zjisti zda ma kamen pruchodnou stranu v danem smeru
-   * @param smer W - sever, S -jih, A - zapad, D - vychod
-   * @param i souradnice - radek
-   * @param j souradnice - sloupec
-   * @return vraci true pokud je kamen v danem smeru pruchodny, jinak false
-   */
-  bool pruchodny_smer(char smer,int i,int j){
-    aktual=v[souradnice(i,j)];
-    switch (smer){
-    case 'W':
-      if(((aktual->tvar=='I')&&((aktual->natoceni==1)||(aktual->natoceni==3)))||
-        ((aktual->tvar=='L')&&((aktual->natoceni==1)||(aktual->natoceni==2)))||
-        ((aktual->tvar=='T')&&(aktual->natoceni==0)))
-        return false;
-      else return true;
-      break;
-    case 'S':
-      if(((aktual->tvar=='I')&&((aktual->natoceni==1)||(aktual->natoceni==3)))||
-        ((aktual->tvar=='L')&&((aktual->natoceni==0)||(aktual->natoceni==3)))||
-        ((aktual->tvar=='T')&&(aktual->natoceni==2)))
-        return false;
-      else return true;
-      break;
-    case 'A':
-      if(((aktual->tvar=='I')&&((aktual->natoceni==0)||(aktual->natoceni==2)))||
-        ((aktual->tvar=='L')&&((aktual->natoceni==0)||(aktual->natoceni==1)))||
-        ((aktual->tvar=='T')&&(aktual->natoceni==3)))
-        return false;
-      else return true;
-      break;
-    case 'D':
-      if(((aktual->tvar=='I')&&((aktual->natoceni==0)||(aktual->natoceni==2)))||
-        ((aktual->tvar=='L')&&((aktual->natoceni==2)||(aktual->natoceni==3)))||
-        ((aktual->tvar=='T')&&(aktual->natoceni==1)))
-        return false;
-      else return true;
-      break;
-    }
-    cerr<<"Chyba - spatny parametr metody pruchodny_smer(char smer,int i,int j)";
-    return false;
-  }
-
-
   /**
    * @brief Posune sloupec dolu nebo nahoru
+   *
+   * Vsune na zacatek/konec sloupce volny kamen a kamen vytlaceny z druhe
+   * strany se stane volnym kamenem
    * @param c_sloupce je cislo sloupce
    * @param dolu true - dolu, false - nahoru
    */
@@ -354,7 +334,6 @@ public:
     }
   }
 
-
   /**
    * @brief Vraci ukazatel na kamen
    * @param pozice je pozice ukazatele ve vektoru
@@ -363,7 +342,6 @@ public:
   Kamen *vrat_kamen(int pozice){
     return v[pozice];
   }
-
 
   /**
    * @brief Vraci ukazatel na kamen
@@ -374,14 +352,7 @@ public:
   Kamen *vrat_kamen(int x,int y){
     return vrat_kamen(souradnice(x,y));
   }
-
-//  void vykresli_bod(Kamen *k){
-//    for
-//    if (k!=nullptr)
-//      cout<<
-//  }
 };
-
 
 
 /**
@@ -419,7 +390,6 @@ public:
     return x;
   }
 
-
   /**
    * @brief Cislo sloupce, na kterem se hrac nachazi
    * @return vrati cislo sloupce, na kterem se dany hrac nachazi
@@ -427,7 +397,6 @@ public:
   int sloupec(){
     return y;
   }
-
 
   /**
    * @brief Vraci hledany predmet
@@ -437,7 +406,6 @@ public:
     return hledany_predmet;
   }
 
-
   /**
    * @brief Vezme si kartu s hledanym predmetem
    * @param karta oznacuje hledany predmet
@@ -446,14 +414,12 @@ public:
     hledany_predmet=karta;
   }
 
-
   /**
    * @brief Prida hraci bod
    */
   void pridej_bod(){
     body++;
   }
-
 
   /**
    * @brief Vraci pocet ziskanych bodu
@@ -462,7 +428,6 @@ public:
   int vrat_body(){
     return body;
   }
-
 
   /**
    * @brief Posune hrace danym smerem bez ohledu na prekazky.
@@ -505,7 +470,7 @@ public:
    * @param smer udava smer pohybu (W,A,S,D)
    */
   void posun_po_desce(char smer){
-    if(deska->pruchodny_smer(smer,x,y))
+    if(deska->pruchodny_smer(smer,x,y)){
       switch (smer) {
         case 'W':
           if (x!=1){  //neni na hornim okraji hraci plochy
@@ -539,16 +504,9 @@ public:
           return;
           break;
       }
-//    if(deska->vrat_kamen(x,y)->vrat_predmet()==hledany_predmet){
-//      hledany_predmet='-';
-//      body++;
-//    }
-
-//    cout<<"posun hrace"<<endl;
-//    x++;y++;
+    }
   }
 };
-
 
 
 /**
@@ -563,8 +521,8 @@ class Hra{
   vector<Hrac*> hrac{NULL,NULL,NULL,NULL};
   vector<char> balicek_karet;
   int poc_karet{0},poc_hracu;
-  int posledni_rad_sl{0};
-  char posledni_smer{' '};
+  int posledni_rad_sl{0}; //naposledy posunovany radek/sloupec
+  char posledni_smer{' '};  //smer posledniho posunu radku/sloupce
 
   /**
    * @brief Ziska od lidra rozmer hraci desky
@@ -603,7 +561,6 @@ class Hra{
     int rozmer=hraci_plocha->rozmer();
     cout<<"Zadejte pocet hracu (2-4):";
     cin>>poc_hracu;
-//    hrac.resize(poc_hracu);
     switch (poc_hracu) {
       case 4:
         hrac[3]=new Hrac(hraci_plocha,rozmer,rozmer);
@@ -629,7 +586,8 @@ class Hra{
    * @brief Ziska od lidra pocet ukolovych karet
    *
    * Zkontroluje zda je ziskany pocet karet v mezich a pote pomoci tohoto
-   * poctu vytvori dany pocet karet
+   * poctu vytvori dany pocet karet.
+   * Take nahodne rozmisti predmety zobrazene na kartach po hraci desce
    * @return vraci true, pokud byl ziskany pocet karet v mezich, jinak false
    */
   bool nastaveni_poctu_karet(){
@@ -644,28 +602,10 @@ class Hra{
       }
       return false;
     }
-
     vytvor_balicek(balicek_karet,poc_karet);
     rozmisti_predmety();
-//    //vygeneruje balicek karet
-//    int poradi;
-//    balicek_karet.assign(poc_karet,' ');
-
-//    for(int i=0;i<poc_karet;i++){
-//      poradi=rand()%(poc_karet-i);
-//      for(int j=0;j<poc_karet;j++){
-//        if(balicek_karet[j]==' '){
-//          if(!poradi){
-//            balicek_karet[j]='A'+i;
-//            break;
-//          }
-//          poradi--;
-//        }
-//      }
-//    }
     return true;
   }
-
 
   /**
    * @brief Vytvori balicek karet
@@ -691,40 +631,21 @@ class Hra{
     }
   }
 
-
+  /**
+   * @brief Nahodne rozmisti predmety po hraci desce
+   */
   void rozmisti_predmety(){
-    vector<char> karty;
-    vytvor_balicek(karty,poc_karet);
     unsigned int p_st; //pravdepodobnost
+    vector<char> karty;
+    vytvor_balicek(karty,poc_karet);  //vytvori pomocny balicek
     int poc_kamenu=hraci_plocha->rozmer()*hraci_plocha->rozmer();
     for(int i=1;i<=poc_kamenu;i++){
-      p_st=rand()%(poc_kamenu-i+1);
+      p_st=rand()%(poc_kamenu-i+1); //nahodne cislo
       if(p_st<karty.size()){
-        hraci_plocha->v[i]->zmen_predmet(karty.back());
-        karty.pop_back();
-//        if(!karty.size())
-//          break;
+        hraci_plocha->v[i]->zmen_predmet(karty.back()); //vlozi predmet
+        karty.pop_back(); //a smaze tento predmet z pomocneho balicku
       }
     }
-
-//    for(int i=1;i<=hraci_plocha->rozmer();i++){
-//      for(int j=1;j<=hraci_plocha->rozmer();j++){
-//        p_st=rand()%(hraci_plocha->rozmer()*hraci_plocha->rozmer()-
-//                     hraci_plocha->souradnice(i,j)-1);
-
-//        p_st=karty.size()/(hraci_plocha->rozmer()*hraci_plocha->rozmer()-
-//                        hraci_plocha->souradnice(i,j)-1);
-//>=
-//      }
-//    }
-
-//    while(karty.size()){
-
-//      cout<<karty.back()<<" /// ";
-
-
-//      karty.pop_back();
-//    }
   }
 
 public:
@@ -739,7 +660,6 @@ public:
     while(!nastaveni_poctu_hracu()){}
     while(!nastaveni_poctu_karet()){}
   }
-
 
   /**
    * @brief Zjisti zda ma dany hrac dostatek bodu pro vitezstvi
@@ -760,7 +680,6 @@ public:
   void pohyb_hrace(int c_hrace,char smer){
     hrac[c_hrace-1]->posun_po_desce(smer); //hraci jsou cislovany od nuly
   }
-
 
   /**
    * @brief Zjisti, zda hrac stoji na karte s predmetem ktery hleda
@@ -783,7 +702,6 @@ public:
     }
     return false;
   }
-
 
   /**
    * @brief Pokud dany hrac nema kartu, pak si vezme kartu z balicku
@@ -882,13 +800,12 @@ public:
           return false;
           break;
       }
-      posledni_rad_sl=rad_sl;
-      posledni_smer=smer;
+      posledni_rad_sl=rad_sl; //zapamatovani posledniho posunu
+      posledni_smer=smer; //zapamatovani posledniho posunu
       return true;
     }
     return false;
   }
-
 
   /**
    * @brief Natoci volny kamen
@@ -898,7 +815,6 @@ public:
     hraci_plocha->v[0]->zmen_natoceni(n);
   }
 
-
   /**
    * @brief Vraci pocet hracu ve hre
    * @return vrati pocet hracu
@@ -906,7 +822,6 @@ public:
   int pocet_hracu(){
     return poc_hracu;
   }
-
 
   /**
    * @brief Ulozi hru do souboru
@@ -917,14 +832,20 @@ public:
     cout<<"Ukladam hru"<<endl;
   }
 
+  /**
+   * @brief Nacte hru ze souboru
+   *
+   * @todo dodelat nacitani hry- zatim jen vypisuje hlasku
+   */
+  void nacti_hru(FILE* f){
+    cout<<"Nacitam hru"<<endl;
+    fclose(f); //SMAZ
+  }
 
   /**
    * @brief Vypise obsah balicku ukolovych karet
    */
   void vypis_balicek(){
-//    for(int i=poc_karet-1;i>=0;i--){  //vypisuje vektor (balicek) odzadu
-//      cout<<balicek_karet[i];
-//    }
     for(int i=balicek_karet.size()-1;i>=0;i--){  //vypisuje (balicek) odzadu
       cout<<balicek_karet[i];
     }
@@ -971,13 +892,6 @@ public:
       cout<<endl;
     }
 
-//    for(int i=1;i<=N;i++){
-//      for(int j=1;j<=N;j++){
-//        cout<<v[souradnice(i,j)]->tvar<<" ";
-//      }
-//
-//      cout<<endl;
-//    }
     cout<<"volny kamen:   Hledany predmet:"<<
           hrac[c_hrace-1]->vrat_hledany_predmet()<<
           "   Karet v balicku zbyva:"<<balicek_karet.size()<<endl;
@@ -987,12 +901,10 @@ public:
     cout<<endl;
     vykresli_kamen_3(SOURADNICE_VOLNY_KAMEN);
     cout<<endl;
-
 //    cout<<"Balicek karet:";
 //    vypis_balicek();
     vypis_body_hracu();
   }
-
 
   /**
    * @brief Na jeden radek vypise body hracu
@@ -1013,15 +925,6 @@ public:
    */
   void vykresli_kamen_1(int i, int j){
     cout<<"|";
-
-//    if(hrac[2]){//treti hrac
-//      if((hrac[2]->radek()==i)&&(hrac[2]->sloupec()==j)){
-//        cout<<"3";
-//      }
-//      else {
-//        cout<<"#";
-//      }
-//    }
     //prvni hrac?
     cout<<((hrac[0]&&(hrac[0]->radek()==i)&&(hrac[0]->sloupec()==j))?"1":"#");
     //cesta na sever
@@ -1030,6 +933,7 @@ public:
     cout<<((hrac[1]&&(hrac[1]->radek()==i)&&(hrac[1]->sloupec()==j))?"2":"#");
     cout<<"|";
   }
+
   /**
    * @brief Vykresli druhou cast kamene leziciho na souradnicich x,y
    *
@@ -1047,6 +951,7 @@ public:
     cout<<(hraci_plocha->pruchodny_smer('D',i,j)?' ':'#');
     cout<<"|";
   }
+
   /**
    * @brief Vykresli treti cast kamene leziciho na souradnicich x,y
    *
@@ -1064,7 +969,6 @@ public:
     cout<<((hrac[3]&&(hrac[3]->radek()==i)&&(hrac[3]->sloupec()==j))?"4":"#");
     cout<<"|";
   }
-
 };
 
 
@@ -1113,7 +1017,7 @@ int main() {
     zprava="";
     cin.clear();
 
-    if(vstup=="Q"){
+    if(vstup=="Q"){ //hrac chce ulozit hru
       stav=ULOZ;
     }
 
@@ -1149,71 +1053,57 @@ int main() {
           hra->natoceni_volneho_kamene(2);
         else if(vstup=="D")
           hra->natoceni_volneho_kamene(1);
+        else if(vstup=="Q")
+          break;
         else
           zprava="!!!Spatny format vstupu!!!\n";
-//        if(vstup=="Q")
-//          hra->uloz_hru();
-
         break;
 
       case POSUNUTI:
         cout<<"Posun radek/sloupec ([cislo radku/sloupce][smer]):";
-//        cout<<"Cislo radku/sloupce k posunuti (pouze suda cisla):";
-//        cin>>rad_sl;
-//        cout<<"Smer posunuti (W-nahoru, A-vlevo, S-dolu, D-vpravo):";
-//        cin>>rad_sl;
-
-//        do {
         cin.clear();
         cin>>vstup;
         velka_pismena(vstup);
         if(vstup=="Q"){
-          stav=ULOZ;
+          //stav=ULOZ;
           break;
         }
-//        }while(!hra->posun_rad_sl(vstup));
         if(hra->posun_rad_sl(vstup))
           stav=POHYB;
         else
           zprava="Spatny format. Napr.: 4D posune 4.radek doprava\n"
                  "format: cs (c-sude cislo;s-smer pohybu WASD)\n"
                  "nebo reverze predchoziho tahu\n";
-
         break;
-//        break;
 
       case POHYB:
         cout<<"Pohybujte figurkou (W,A,S,D - pohyb, N - ukonceni tahu):";
-
         cin>>vstup;
         velka_pismena(vstup);
+        //projde vsechny znaky, ktere hrac zadal a postupne je zpracuje
         for(unsigned i=0;i<vstup.length();i++){
           if((vstup[i]=='W')||(vstup[i]=='A')||
              (vstup[i]=='S')||(vstup[i]=='D')){
             hra->pohyb_hrace(hrac,vstup[i]);
           }
-          else if(vstup[i]=='N'){
-            //zjisteni zda hrac nenasel predmet
+          else if(vstup[i]=='N'){//ukonceni tahu hrace
+            //zjisteni zda hrac nasel predmet, pokud ano, prida hraci bod
             if (hra->nasel_hrac_predmet(hrac)){
               cout<<"Ziskan predmet. (pokracujte zmacknutim klavesy Enter)"
                  <<endl;
               getchar();  //stisk klavesy
               cin.ignore(256,'\n'); //uklid smeti-kdyby bylo zadano vice znaku
-              if (hra->vyhral(hrac)){
+              if (hra->vyhral(hrac)){ //pokud ma hrac dostatek bodu -> vyhral
                 stav=VITEZSTVI;
                 break;
               }
             }
-
-
             stav=DALSI_HRAC;
             break;
           }
           else
             zprava="Zadan jiny znak nez W,A,S,D nebo N\n";
         }
-//        zprava="vykonan pohyb\n"; //SMAZAT
-        //stav=DALSI_HRAC;
         break;
 
       case ULOZ:
@@ -1231,14 +1121,8 @@ int main() {
 
       default:
         break;
-    }
-//    cin.clear();
-//    cin>>vstup;
-  }
-
-  //ulozeni hry
-//  hra->uloz_hru();
-
+    } //konec switch (stav)
+  } //konec while(true)
 
   return 0;
 }
