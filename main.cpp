@@ -563,6 +563,8 @@ class Hra{
   vector<Hrac*> hrac{NULL,NULL,NULL,NULL};
   vector<char> balicek_karet;
   int poc_karet{0},poc_hracu;
+  int posledni_rad_sl{0};
+  char posledni_smer{' '};
 
   /**
    * @brief Ziska od lidra rozmer hraci desky
@@ -805,7 +807,6 @@ public:
    * @return vraci true, pokud retezec vyhovuje formatu, jinak false
    */
   bool posun_rad_sl(string r_s_smer){
-    //TODO zkontrolovat, zda se nepresouva hrac na druhou stranu hraci plochy
     //posouvani radku
     int rad_sl;
     char smer;
@@ -826,41 +827,63 @@ public:
     if(!(rad_sl%2)&&(rad_sl>0)&&(rad_sl<hraci_plocha->rozmer())){
       switch (smer) {
         case 'W':
-          //posune dany sloupec nahoru
-          hraci_plocha->posun_sloupec(rad_sl,false);
-          for (int i=0;i<poc_hracu;i++)
-            if(hrac[i]->sloupec()==rad_sl)
-              hrac[i]->posun_hrace(smer);
+          if((posledni_smer!='S')||(posledni_rad_sl!=rad_sl)){
+            //posune dany sloupec nahoru
+            hraci_plocha->posun_sloupec(rad_sl,false);
+            //posun hrace zaroven s posunem kamene
+            for (int i=0;i<poc_hracu;i++)
+              if(hrac[i]->sloupec()==rad_sl)
+                hrac[i]->posun_hrace(smer);
+          }
+          else  //reverze predchoziho tahu
+            return false;
           break;
 
         case 'A':
-          //posune dany radek doleva
-          hraci_plocha->posun_radek(rad_sl,false);
-          for (int i=0;i<poc_hracu;i++)
-            if(hrac[i]->radek()==rad_sl)
-              hrac[i]->posun_hrace(smer);
+          if((posledni_smer!='D')||(posledni_rad_sl!=rad_sl)){
+            //posune dany radek doleva
+            hraci_plocha->posun_radek(rad_sl,false);
+            //posun hrace zaroven s posunem kamene
+            for (int i=0;i<poc_hracu;i++)
+              if(hrac[i]->radek()==rad_sl)
+                hrac[i]->posun_hrace(smer);
+          }
+          else  //reverze predchoziho tahu
+            return false;
           break;
 
         case 'S':
-          //posune dany sloupec dolu
-          hraci_plocha->posun_sloupec(rad_sl,true);
-          for (int i=0;i<poc_hracu;i++)
-            if(hrac[i]->sloupec()==rad_sl)
-              hrac[i]->posun_hrace(smer);
+          if((posledni_smer!='W')||(posledni_rad_sl!=rad_sl)){
+            //posune dany sloupec dolu
+            hraci_plocha->posun_sloupec(rad_sl,true);
+            //posun hrace zaroven s posunem kamene
+            for (int i=0;i<poc_hracu;i++)
+              if(hrac[i]->sloupec()==rad_sl)
+                hrac[i]->posun_hrace(smer);
+          }
+          else  //reverze predchoziho tahu
+            return false;
           break;
 
         case 'D':
-          //posune dany radek doprava
-          hraci_plocha->posun_radek(rad_sl,true);
-          for (int i=0;i<poc_hracu;i++)
-            if(hrac[i]->radek()==rad_sl)
-              hrac[i]->posun_hrace(smer);
+          if((posledni_smer!='A')||(posledni_rad_sl!=rad_sl)){
+            //posune dany radek doprava
+            hraci_plocha->posun_radek(rad_sl,true);
+            //posun hrace zaroven s posunem kamene
+            for (int i=0;i<poc_hracu;i++)
+              if(hrac[i]->radek()==rad_sl)
+                hrac[i]->posun_hrace(smer);
+          }
+          else  //reverze predchoziho tahu
+            return false;
           break;
 
         default:
           return false;
           break;
       }
+      posledni_rad_sl=rad_sl;
+      posledni_smer=smer;
       return true;
     }
     return false;
@@ -1047,7 +1070,7 @@ public:
 
 /**
  * @brief Prevede male znaky anglicke abecedy na velke
- * @param retezec je reference na string, ktery se prevest
+ * @param retezec je reference na string, ktery se ma prevest
  */
 void velka_pismena(string &retezec){
   for(unsigned i=0;i<retezec.length();i++){
@@ -1078,34 +1101,18 @@ void smaz_obrazovku(){
 int main() {
   Hra *hra=new Hra;
   string zprava{""};
-  //int rad_sl; //cislo radku/sloupce
-
-//  cout<<"Pocet tvaru: "<<endl<<"I: "<<Kamen::count_I<<endl<<
-//      "L: "<<Kamen::count_L<<endl<<"T: "<<Kamen::count_T<<endl<<endl; //SMAZ
-
   string vstup{""};
   int stav{DALSI_HRAC};
   int poc_hracu{hra->pocet_hracu()};
   int hrac{poc_hracu};
 
-//  cout<<"Natoc volny kamen (W,A,S,D-natocit, N-preskocit):";
-//  cin.clear();
-//  cin>>vstup;
-  while(true) {
+  while(true) { //prubeh hry
     smaz_obrazovku();
     hra->vykreslit_terminal(hrac);
     cout<<zprava;
     zprava="";
     cin.clear();
-//    cin.ignore(256,'\n');
 
-//    if(vstup=="N"){
-//      if(stav==NATOCENI)
-//        stav=POSUNUTI;
-//      else if (stav==POHYB) {
-//        stav=DALSI_HRAC;
-//      }
-//    }
     if(vstup=="Q"){
       stav=ULOZ;
     }
@@ -1158,7 +1165,7 @@ int main() {
 
 //        do {
         cin.clear();
-        cin>>vstup; //TODO upper case - všechny mala pismena prevest na velka
+        cin>>vstup;
         velka_pismena(vstup);
         if(vstup=="Q"){
           stav=ULOZ;
@@ -1169,7 +1176,8 @@ int main() {
           stav=POHYB;
         else
           zprava="Spatny format. Napr.: 4D posune 4.radek doprava\n"
-                 "format: cs (c-sude cislo;s-smer pohybu WASD)\n";
+                 "format: cs (c-sude cislo;s-smer pohybu WASD)\n"
+                 "nebo reverze predchoziho tahu\n";
 
         break;
 //        break;
